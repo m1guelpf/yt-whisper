@@ -41,4 +41,4 @@ Run the following to view all available options:
 
 ## License
 
-The code and the model weights of Whisper are released under the MIT License. See [LICENSE](LICENSE) for further details.
+This script is open-source and licensed under the MIT License. For more details, check the [LICENSE](LICENSE) file.

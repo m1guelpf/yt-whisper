@@ -4,6 +4,7 @@ import argparse
 import warnings
 import youtube_dl
 from .utils import slugify, str2bool, write_vtt, youtube_dl_log
+import tempfile
 
 
 def main():
@@ -48,12 +49,14 @@ def main():
 
 
 def get_audio(urls):
+    temp_dir = tempfile.gettempdir()
+
     ydl = youtube_dl.YoutubeDL({
         'quiet': True,
         'verbose': False,
         'no_warnings': True,
         'format': 'bestaudio/best',
-        "outtmpl": '/tmp/%(id)s.%(ext)s',
+        "outtmpl": os.path.join(temp_dir, "%(id)s.%(ext)s"),
         'progress_hooks': [youtube_dl_log],
         'postprocessors': [{
             'preferredcodec': 'mp3',
@@ -69,7 +72,7 @@ def get_audio(urls):
         print(
             f"Downloaded video \"{result['title']}\". Generating subtitles..."
         )
-        paths[result["title"]] = f"/tmp/{result['id']}.mp3"
+        paths[result["title"]] = os.path.join(temp_dir, f"{result['id']}.mp3")
 
     return paths
 

@@ -41,7 +41,7 @@ def main():
         warnings.filterwarnings("default")
 
         vtt_path = os.path.join(output_dir, f"{slugify(title)}.vtt")
-        with open(vtt_path, 'w') as vtt:
+        with open(vtt_path, 'w', encoding="utf-8") as vtt:
             write_vtt(result["segments"], file=vtt)
 
         # print saved message with absolute path

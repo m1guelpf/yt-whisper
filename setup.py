@@ -11,7 +11,7 @@ setup(
     author="Miguel Piedrafita",
     install_requires=[
         'youtube-dl',
-        'whisper @ git+ssh://git@github.com/openai/whisper@main#egg=whisper'
+        'whisper @ git+https://github.com/openai/whisper.git@main#egg=whisper'
     ],
     description="Generate subtitles for YouTube videos using Whisper",
     entry_points={

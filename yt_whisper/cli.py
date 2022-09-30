@@ -1,11 +1,11 @@
 import os
 import whisper
+from whisper.tokenizer import LANGUAGES, TO_LANGUAGE_CODE
 import argparse
 import warnings
 import youtube_dl
 from .utils import slugify, str2bool, write_vtt, youtube_dl_log
 import tempfile
-from .language import LANGUAGES, TO_LANGUAGE_CODE
 
 
 def main():

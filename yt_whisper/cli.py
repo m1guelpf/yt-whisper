@@ -5,6 +5,7 @@ import warnings
 import youtube_dl
 from .utils import slugify, str2bool, write_vtt, youtube_dl_log
 import tempfile
+from .language import LANGUAGES, TO_LANGUAGE_CODE
 
 
 def main():
@@ -21,6 +22,9 @@ def main():
 
     parser.add_argument("--task", type=str, default="transcribe", choices=[
                         "transcribe", "translate"], help="whether to perform X->X speech recognition ('transcribe') or X->English translation ('translate')")
+    
+    parser.add_argument("--language", type=str, default=None, choices=sorted(LANGUAGES.keys()) + sorted([k.title() for k in TO_LANGUAGE_CODE.keys()]), 
+                        help="language spoken in the audio, specify None to perform language detection")
 
     args = parser.parse_args().__dict__
     model_name: str = args.pop("model")

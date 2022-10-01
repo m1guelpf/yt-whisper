@@ -25,17 +25,36 @@ def format_timestamp(seconds: float):
 
     return (f"{hours}:" if hours > 0 else "") + f"{minutes:02d}:{seconds:02d}.{milliseconds:03d}"
 
+def break_line(line: str, length: int):
+    break_index = min(len(line)//2, length) # split evenly or at maximum length
 
-def write_vtt(transcript: Iterator[dict], file: TextIO):
+    # work backwards from that guess to split between words
+    # if break_index <= 1, we've hit the beginning of the string and can't split
+    while break_index > 1:
+        if line[break_index - 1] == " ":
+            break # break at space
+        else:
+            break_index -= 1
+    if break_index > 1:
+        # split the line, not including the space at break_index
+        return line[:break_index - 1] + "\n" + line[break_index:]
+    else:
+        return line
+
+
+def write_vtt(transcript: Iterator[dict], file: TextIO, line_length: int = 0):
     print("WEBVTT\n", file=file)
     for segment in transcript:
+        if line_length > 0 and len(segment["text"]) > line_length:
+            # break at N characters as per Netflix guidelines
+            segment["text"] = break_line(segment["text"], line_length)
+
         print(
             f"{format_timestamp(segment['start'])} --> {format_timestamp(segment['end'])}\n"
             f"{segment['text'].replace('-->', '->')}\n",
             file=file,
             flush=True,
         )
-
 
 def slugify(title):
     return "".join(c if c.isalnum() else "_" for c in title).rstrip("_")

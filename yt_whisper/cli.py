@@ -58,7 +58,7 @@ def main():
         else:
             srt_path = os.path.join(output_dir, f"{slugify(title)}.srt")
             with open(srt_path, 'w', encoding="utf-8") as srt:
-                write_srt(result["segments"], file=srt)
+                write_srt(result["segments"], file=srt, line_length=break_lines)
 
             print("Saved SRT to", os.path.abspath(srt_path))
 

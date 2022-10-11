@@ -13,12 +13,15 @@ You'll also need to install [`ffmpeg`](https://ffmpeg.org/), which is available 
 ```bash
 # on Ubuntu or Debian
 sudo apt update && sudo apt install ffmpeg
+sudo apt install snapd && sudo snap install yt-dlp
 
 # on MacOS using Homebrew (https://brew.sh/)
 brew install ffmpeg
+brew install yt-dlp
 
 # on Windows using Chocolatey (https://chocolatey.org/)
 choco install ffmpeg
+choco install yt-dlp
 ```
 
 ## Usage

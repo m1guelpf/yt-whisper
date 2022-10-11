@@ -3,7 +3,7 @@ import whisper
 from whisper.tokenizer import LANGUAGES, TO_LANGUAGE_CODE
 import argparse
 import warnings
-import youtube_dl
+import yt_dlp
 from .utils import slugify, str2bool, write_srt, write_vtt, youtube_dl_log
 import tempfile
 
@@ -66,19 +66,15 @@ def main():
 def get_audio(urls):
     temp_dir = tempfile.gettempdir()
 
-    ydl = youtube_dl.YoutubeDL({
-        'quiet': True,
-        'verbose': False,
-        'no_warnings': True,
-        'format': 'bestaudio/best',
-        "outtmpl": os.path.join(temp_dir, "%(id)s.%(ext)s"),
-        'progress_hooks': [youtube_dl_log],
-        'postprocessors': [{
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-            'key': 'FFmpegExtractAudio',
-        }],
-    })
+    ydl = yt_dlp.YoutubeDL({'format': 'bestaudio',
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
+            }],
+            'verbose':False,
+            "outtmpl": os.path.join(temp_dir, "%(id)s.%(ext)s"),
+})
 
     paths = {}
 

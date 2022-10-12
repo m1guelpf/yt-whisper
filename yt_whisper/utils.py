@@ -79,8 +79,3 @@ def write_srt(transcript: Iterator[dict], file: TextIO, line_length: int = 0):
 def slugify(title):
     return "".join(c if c.isalnum() else "_" for c in title).rstrip("_")
 
-
-def youtube_dl_log(d):
-    if d['status'] == 'downloading':
-        print("Downloading video: " +
-              str(round(float(d['downloaded_bytes'])/float(d['total_bytes'])*100, 1))+"%")

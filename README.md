@@ -8,20 +8,17 @@ To get started, you'll need Python 3.7 or newer. Install the binary by running t
 
     pip install git+https://github.com/m1guelpf/yt-whisper.git
 
-You'll also need to install [`ffmpeg`](https://ffmpeg.org/) and [`yt-dlp`](https://github.com/yt-dlp/yt-dlp) which is available from most package managers:
+You'll also need to install [`ffmpeg`](https://ffmpeg.org/), which is available from most package managers:
 
 ```bash
 # on Ubuntu or Debian
 sudo apt update && sudo apt install ffmpeg
-sudo apt install snapd && sudo snap install yt-dlp
 
 # on MacOS using Homebrew (https://brew.sh/)
 brew install ffmpeg
-brew install yt-dlp
 
 # on Windows using Chocolatey (https://chocolatey.org/)
 choco install ffmpeg
-choco install yt-dlp
 ```
 
 ## Usage

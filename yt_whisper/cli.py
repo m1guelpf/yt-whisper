@@ -66,15 +66,13 @@ def main():
 def get_audio(urls):
     temp_dir = tempfile.gettempdir()
 
-    ydl = yt_dlp.YoutubeDL({'format': 'bestaudio',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
-            'verbose':False,
-            "outtmpl": os.path.join(temp_dir, "%(id)s.%(ext)s"),
-})
+    ydl = yt_dlp.YoutubeDL({
+        'quiet': True,
+        'verbose': False,
+        'format': 'bestaudio',
+        "outtmpl": os.path.join(temp_dir, "%(id)s.%(ext)s"),
+        'postprocessors': [{'preferredcodec': 'mp3', 'preferredquality': '192', 'key': 'FFmpegExtractAudio', }],
+    })
 
     paths = {}
 

@@ -4,8 +4,9 @@ from whisper.tokenizer import LANGUAGES, TO_LANGUAGE_CODE
 import argparse
 import warnings
 import yt_dlp
-from .utils import slugify, str2bool, write_srt, write_vtt
+from utils import slugify, str2bool, write_srt, write_vtt
 import tempfile
+import validators
 
 
 def main():
@@ -41,7 +42,25 @@ def main():
         args["language"] = "en"
 
     model = whisper.load_model(model_name)
-    audios = get_audio(args.pop("video"))
+
+    video_sources = args.pop("video")
+
+    # check if the video sources are valid URLs
+    all_are_urs = True
+    for video_source in video_sources:
+        if not validators.url(video_source):
+            all_are_urs = False
+            break
+
+    if all_are_urs:
+        # download the videos and return their paths
+        audios = get_audio(video_sources)
+    else:
+        # prep the video sources as audio paths
+        audios = {}
+        for video_source in video_sources:
+            audios[video_source] = video_source
+
     break_lines = args.pop("break_lines")
 
     for title, audio_path in audios.items():
@@ -62,7 +81,7 @@ def main():
 
             print("Saved SRT to", os.path.abspath(srt_path))
 
-
+# Downlaods youtube videos and returns their paths
 def get_audio(urls):
     temp_dir = tempfile.gettempdir()
 

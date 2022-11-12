@@ -39,6 +39,13 @@ Run the following to view all available options:
 
     yt_whisper --help
 
+
+## Similar Work
+A streamlit based webapp using yt-whisper for capturing and downloading subtitles from youtube videos as per the user's input : https://github.com/prateekralhan/Youtube-Whisper-Streamlit
+
+![](https://user-images.githubusercontent.com/29462447/201472171-0c20444c-82a4-444e-85eb-a1898c9ae896.gif)
+
+
 ## License
 
 This script is open-source and licensed under the MIT License. For more details, check the [LICENSE](LICENSE) file.

@@ -1,4 +1,5 @@
 from typing import Iterator, TextIO
+import math
 
 
 def str2bool(string):
@@ -79,3 +80,27 @@ def write_srt(transcript: Iterator[dict], file: TextIO, line_length: int = 0):
 def slugify(title):
     return "".join(c if c.isalnum() else "_" for c in title).rstrip("_")
 
+def write_vtt_openvino(transcript: Iterator[dict], file: TextIO, line_length: int = 0):
+    print("WEBVTT\n", file=file)
+    for segment in transcript:
+        segment = process_segment(segment, line_length=line_length)
+
+        print(
+            f"{format_timestamp(segment['timestamp'][0])} --> {format_timestamp(segment['timestamp'][1])}\n"
+            f"{segment['text'].strip().replace('-->', '->')}\n",
+            file=file,
+            flush=True,
+        )
+
+def write_srt_openvino(transcript: Iterator[dict], file: TextIO, line_length: int = 0):
+    for i, segment in enumerate(transcript, start=1):
+        segment = process_segment(segment, line_length=line_length)
+
+        print(
+            f"{i}\n"
+            f"{format_timestamp(segment['timestamp'][0], always_include_hours=True, decimal_marker=',')} --> "
+            f"{format_timestamp(segment['timestamp'][1], always_include_hours=True, decimal_marker=',')}\n"
+            f"{segment['text'].strip().replace('-->', '->')}\n",
+            file=file,
+            flush=True,
+        )

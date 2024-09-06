@@ -4,8 +4,11 @@ from whisper.tokenizer import LANGUAGES, TO_LANGUAGE_CODE
 import argparse
 import warnings
 import yt_dlp
-from .utils import slugify, str2bool, write_srt, write_vtt
+from .utils import slugify, str2bool, write_srt, write_vtt, write_srt_openvino, write_vtt_openvino
 import tempfile
+from optimum.intel.openvino import OVModelForSpeechSeq2Seq
+from transformers import AutoProcessor, pipeline
+import subprocess
 
 
 def main():
@@ -25,40 +28,73 @@ def main():
                         "transcribe", "translate"], help="whether to perform X->X speech recognition ('transcribe') or X->English translation ('translate')")
     parser.add_argument("--language", type=str, default=None, choices=sorted(LANGUAGES.keys()) + sorted([k.title() for k in TO_LANGUAGE_CODE.keys()]),
                         help="language spoken in the audio, skip to perform language detection")
-
+    parser.add_argument("--openvino", action='store_true',
+                        help="Whether to use openvino pipeline for inferencing.")
     parser.add_argument("--break-lines", type=int, default=0, 
                         help="Whether to break lines into a bottom-heavy pyramid shape if line length exceeds N characters. 0 disables line breaking.")
 
     args = parser.parse_args().__dict__
+    is_openvino = args.pop("openvino")
     model_name: str = args.pop("model")
     output_dir: str = args.pop("output_dir")
     subtitles_format: str = args.pop("format")
     os.makedirs(output_dir, exist_ok=True)
+    os.makedirs("models", exist_ok=True)
+
+    model_dir = os.path.join("models", model_name)
 
     if model_name.endswith(".en"):
         warnings.warn(
             f"{model_name} is an English-only model, forcing English detection.")
         args["language"] = "en"
 
-    model = whisper.load_model(model_name)
+    if is_openvino:
+        if not os.path.exists(model_dir):
+            bash_command = ["optimum-cli", "export", "openvino", "-m", f"openai/whisper-{model_name}", model_dir, "--weight-format", "fp16"]
+            subprocess.run(bash_command, check=True)
+            print(f"Model downloaded and coverted to OpenVINO Intermediate Representation (IR) successfully.")
+        ov_model = OVModelForSpeechSeq2Seq.from_pretrained(model_dir, device="cpu")
+        processor = AutoProcessor.from_pretrained(model_dir)
+        pipe = pipeline(
+            "automatic-speech-recognition",
+            model=ov_model,
+            tokenizer=processor.tokenizer,
+            feature_extractor=processor.feature_extractor,
+            generate_kwargs={"task": "transcribe"},
+            return_timestamps=True
+        )
+    else:
+        model = whisper.load_model(model_name)
+    
     audios = get_audio(args.pop("video"))
     break_lines = args.pop("break_lines")
 
     for title, audio_path in audios.items():
         warnings.filterwarnings("ignore")
-        result = model.transcribe(audio_path, **args)
-        warnings.filterwarnings("default")
+        if is_openvino:
+            result = pipe(audio_path)
+            transcript = result["chunks"]
+        else:
+            result = model.transcribe(audio_path, **args)
+            warnings.filterwarnings("default")
+            transcript = result["segments"]
 
         if (subtitles_format == 'vtt'):
             vtt_path = os.path.join(output_dir, f"{slugify(title)}.vtt")
             with open(vtt_path, 'w', encoding="utf-8") as vtt:
-                write_vtt(result["segments"], file=vtt, line_length=break_lines)
+                if is_openvino:
+                    write_vtt_openvino(transcript, file=vtt, line_length=break_lines)
+                else:
+                    write_vtt(transcript, file=vtt, line_length=break_lines)
 
             print("Saved VTT to", os.path.abspath(vtt_path))
         else:
             srt_path = os.path.join(output_dir, f"{slugify(title)}.srt")
             with open(srt_path, 'w', encoding="utf-8") as srt:
-                write_srt(result["segments"], file=srt, line_length=break_lines)
+                if is_openvino:
+                    write_srt_openvino(transcript, file=srt, line_length=break_lines)
+                else:
+                    write_srt(transcript, file=srt, line_length=break_lines)
 
             print("Saved SRT to", os.path.abspath(srt_path))
 

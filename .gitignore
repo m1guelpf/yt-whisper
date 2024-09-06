@@ -2,3 +2,7 @@ dist
 .DS_Store
 *.egg-info
 yt_whisper/__pycache__
+*.vtt
+.venv
+models
+build

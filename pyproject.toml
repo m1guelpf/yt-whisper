@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yt_whisper"
+version = "1.0.0"
+description = "Generate subtitles for YouTube videos using Whisper"
+authors = [
+    { name = "Miguel Piedrafita", email = "your.email@example.com" }
+]
+dependencies = [
+    "yt-dlp",
+    "openai-whisper @ git+https://github.com/openai/whisper.git@main",
+    "openvino>=2024.1.0",
+    "nncf>=2.10.0",
+    "python-ffmpeg<=1.0.16",
+    "moviepy",
+    "transformers",
+    "onnx",
+    "optimum-intel @ git+https://github.com/huggingface/optimum-intel.git",
+    "peft==0.6.2",
+    "torch>=2.1,<2.4",
+    "torchvision<0.19.0",
+    "soundfile",
+    "librosa",
+    "jiwer",
+    "pytube @ git+https://github.com/garywu007/pytube.git"
+]
+
+[project.scripts]
+yt_whisper = "yt_whisper.cli:main"

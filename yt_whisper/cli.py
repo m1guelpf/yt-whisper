@@ -4,7 +4,7 @@ from whisper.tokenizer import LANGUAGES, TO_LANGUAGE_CODE
 import argparse
 import warnings
 import yt_dlp
-from .utils import slugify, str2bool, write_srt, write_vtt
+from .utils import slugify, split_long_segments, str2bool, write_srt, write_vtt
 import tempfile
 
 
@@ -29,6 +29,9 @@ def main():
     parser.add_argument("--break-lines", type=int, default=0, 
                         help="Whether to break lines into a bottom-heavy pyramid shape if line length exceeds N characters. 0 disables line breaking.")
 
+    parser.add_argument("--max-line-length", type=int, default=0,
+                        help="Cap on-screen subtitle length. Segments longer than N characters are split into multiple entries on punctuation when possible (suggested: 84). Uses word-level timestamps to keep timing accurate. 0 disables splitting.")
+
     args = parser.parse_args().__dict__
     model_name: str = args.pop("model")
     output_dir: str = args.pop("output_dir")
@@ -43,22 +46,31 @@ def main():
     model = whisper.load_model(model_name)
     audios = get_audio(args.pop("video"))
     break_lines = args.pop("break_lines")
+    max_line_length: int = args.pop("max_line_length")
+
+    if max_line_length > 0:
+        # word-level timestamps are required to redistribute timing across splits
+        args["word_timestamps"] = True
 
     for title, audio_path in audios.items():
         warnings.filterwarnings("ignore")
         result = model.transcribe(audio_path, **args)
         warnings.filterwarnings("default")
 
+        segments = result["segments"]
+        if max_line_length > 0:
+            segments = split_long_segments(segments, max_line_length)
+
         if (subtitles_format == 'vtt'):
             vtt_path = os.path.join(output_dir, f"{slugify(title)}.vtt")
             with open(vtt_path, 'w', encoding="utf-8") as vtt:
-                write_vtt(result["segments"], file=vtt, line_length=break_lines)
+                write_vtt(segments, file=vtt, line_length=break_lines)
 
             print("Saved VTT to", os.path.abspath(vtt_path))
         else:
             srt_path = os.path.join(output_dir, f"{slugify(title)}.srt")
             with open(srt_path, 'w', encoding="utf-8") as srt:
-                write_srt(result["segments"], file=srt, line_length=break_lines)
+                write_srt(segments, file=srt, line_length=break_lines)
 
             print("Saved SRT to", os.path.abspath(srt_path))
 
